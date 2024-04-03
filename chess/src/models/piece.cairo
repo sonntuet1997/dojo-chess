@@ -11,7 +11,7 @@ struct Piece {
     piece_type: PieceType,
 }
 
-#[derive(Copy, Drop, Serde, Introspect)]
+#[derive(Copy, Drop, Serde, Introspect, Eq, PartialEq)]
 struct Vec2 {
     x: u32,
     y: u32
@@ -31,6 +31,7 @@ enum PieceType {
 trait PieceTrait {
     fn is_out_of_board(next_position: Vec2) -> bool;
     fn is_right_piece_move(self: @Piece, next_position: Vec2) -> bool;
+    fn diff(a: u32, b: u32) -> u32;
 }
 
 impl PieceImpl of PieceTrait {
@@ -41,7 +42,7 @@ impl PieceImpl of PieceTrait {
     fn is_right_piece_move(self: @Piece, next_position: Vec2) -> bool {
         let n_x = next_position.x;
         let n_y = next_position.y;
-        assert(!(n_x == *self.position.x && n_y == *self.position.y), 'Cannot move same position');
+        if (n_x == *self.position.x && n_y == *self.position.y) { return false; }
         match self.piece_type {
             PieceType::Pawn => {
                 match self.color {
@@ -61,30 +62,30 @@ impl PieceImpl of PieceTrait {
                 }
             },
             PieceType::Knight => { 
-                (diff(*self.position.x, n_x) == 2 && diff(*self.position.y, n_y) == 1)
-                || (diff(*self.position.x, n_x) == 1 && diff(*self.position.y, n_y) == 2)
+                (PieceTrait::diff(*self.position.x, n_x) == 2 && PieceTrait::diff(*self.position.y, n_y) == 1)
+                || (PieceTrait::diff(*self.position.x, n_x) == 1 && PieceTrait::diff(*self.position.y, n_y) == 2)
              },
             PieceType::Bishop => {
-                diff(*self.position.x, n_x) == diff(*self.position.y, n_y)
+                PieceTrait::diff(*self.position.x, n_x) == PieceTrait::diff(*self.position.y, n_y)
             },
             PieceType::Rook => {
                 (n_x == *self.position.x || n_y != *self.position.y)
-                    || (n_x != *self.position.x || n_y == *self.position.y)
+                || (n_x != *self.position.x || n_y == *self.position.y)
             },
             PieceType::Queen => {
-                (n_x == *self.position.x)
-                || (n_y == *self.position.y)
-                || (diff(*self.position.x, n_x) == diff(*self.position.y, n_y))
+                (n_x == *self.position.x) || (n_y == *self.position.y)
+                || (PieceTrait::diff(*self.position.x, n_x) == PieceTrait::diff(*self.position.y, n_y))
             },
             PieceType::King => {
-                (diff(*self.position.x, n_x) <= 1 && diff(*self.position.y, n_y) <= 1)
+                (PieceTrait::diff(*self.position.x, n_x) <= 1 && PieceTrait::diff(*self.position.y, n_y) <= 1)
             },
             PieceType::None => panic(array!['Should not move empty piece']),
         }
     }
+
+    fn diff(a: u32, b: u32) -> u32 {
+         if a < b { return b - a; }
+         return a - b;
+     }
 }
 
-fn diff(a: u32, b: u32) -> u32 {
-    if a < b { return b - a; }
-    return a - b;
-}
