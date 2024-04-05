@@ -31,6 +31,8 @@ enum PieceType {
 trait PieceTrait {
     fn is_out_of_board(next_position: Vec2) -> bool;
     fn is_right_piece_move(self: @Piece, next_position: Vec2) -> bool;
+    fn get_distance(curr_position: Vec2, next_position: Vec2) -> u32;
+    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (i32, i32);
     fn diff(a: u32, b: u32) -> u32;
 }
 
@@ -86,6 +88,51 @@ impl PieceImpl of PieceTrait {
     fn diff(a: u32, b: u32) -> u32 {
          if a < b { return b - a; }
          return a - b;
-     }
+    }
+
+    fn get_distance(curr_position: Vec2, next_position: Vec2) -> u32 {
+        let x: u32 = PieceTrait::diff(curr_position.x, next_position.x);
+        let y: u32 = PieceTrait::diff(curr_position.y, next_position.y);
+        if x > y {
+            return x;
+        } else {
+            return y;
+        }
+    }
+
+    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (i32, i32) {
+        let curr_x: i32 = curr_position.x.try_into().unwrap(); let next_x: i32 = next_position.x.try_into().unwrap();
+        let x: i32 = curr_x - next_x;
+        let curr_y: i32 = curr_position.y.try_into().unwrap(); let next_y: i32 = next_position.y.try_into().unwrap();
+        let y: i32 = curr_y - next_y;
+        let mut tup: (i32, i32) = (0, 0);
+        if (x > 0 && y > 0) {
+            tup = (1, 1);
+        }
+        if (x < 0 && y > 0) {
+            tup = (-1, 1);
+        }
+        if (x < 0 && y < 0) {
+            tup = (-1, -1);
+        }
+        if (x > 0 && y < 0) {
+            tup = (1, -1);
+        }
+        if y == 0 {
+            if x < 0 {
+                tup = (-1, 0);
+            } else {
+                tup = (1, 0);
+            }
+        }
+        if x == 0 {
+            if y < 0 {
+                tup = (0, -1);
+            } else {
+                tup = (0, 1);
+            }
+        }
+        return tup;
+    }
 }
 

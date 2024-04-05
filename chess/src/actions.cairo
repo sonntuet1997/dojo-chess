@@ -3,7 +3,10 @@ use chess::models::piece::Vec2;
 
 #[dojo::interface]
 trait IActions {
-    fn move(curr_position: Vec2, next_position: Vec2, caller: ContractAddress, game_id: u32);
+    fn is_legal_move(curr_position: Vec2, next_position: Vec2, caller: ContractAddress, game_id: u32) -> bool;
+    fn is_in_check(caller: ContractAddress, game_id: u32) -> bool;
+    fn is_in_checkmate(caller: ContractAddress, game_id: u32) -> bool;
+    fn is_not_block(curr_position: Vec2, next_position: Vec2, game_id: u32) -> bool;
     fn spawn(white_address: ContractAddress, black_address: ContractAddress) -> u32;
 }
 
@@ -16,6 +19,48 @@ mod actions {
 
     #[abi(embed_v0)]
     impl IActionsImpl of IActions<ContractState> {
+        fn is_in_check(world: IWorldDispatcher, caller: ContractAddress, game_id: u32) -> bool {
+            true
+        }
+
+        fn is_in_checkmate(world: IWorldDispatcher, caller: ContractAddress, game_id: u32) -> bool {
+            true
+        }
+
+        fn is_not_block(world: IWorldDispatcher, curr_position: Vec2, next_position: Vec2, game_id: u32) -> bool {
+            if PieceTrait::is_out_of_board(next_position) {
+                return false;
+            }
+            let mut curr_piece = get!(world, (game_id, curr_position), (Piece));
+            if curr_piece.piece_type == PieceType::Pawn || curr_piece.piece_type == PieceType::Knight || curr_piece.piece_type == PieceType::King {
+                return true;
+            }
+            if curr_piece.piece_type == PieceType::Queen || curr_piece.piece_type == PieceType::Bishop || curr_piece.piece_type == PieceType::Rook {
+                let (a, b): (i32, i32) = PieceTrait::get_direction(curr_position, next_position);
+                let mut d: i32 = PieceTrait::get_distance(curr_position, next_position).try_into().unwrap();
+                let mut i: i32 = 1;
+                let result: bool = loop
+                {
+                    if i > d
+                    {
+                        break true;
+                    }
+                    let mut x_i32: i32 = curr_position.x.try_into().unwrap(); let mut y_i32: i32 = curr_position.y.try_into().unwrap();
+                    x_i32 += i * a; y_i32 += i * b;
+                    let mut x_u32: u32 = x_i32.try_into().unwrap(); let mut y_u32: u32 = y_i32.try_into().unwrap();
+                    let mut pos = Vec2 {x: x_u32, y: y_u32};
+                    let mut piece = get!(world, (game_id, pos), (Piece));
+                    if piece.piece_type != PieceType::None
+                    {
+                        break false;
+                    }
+                    i += 1;
+                };
+                return result;
+            }
+            return false;
+        }
+
         fn spawn(
             world: IWorldDispatcher,
             white_address: ContractAddress,
@@ -141,8 +186,7 @@ mod actions {
                 })
             );
 
-            //set black Pieces
-            // set white Rook
+            // set black Rook
             set!(
                 world,
                 (Piece {
@@ -162,7 +206,7 @@ mod actions {
                 })
             );
 
-            //set white pawn
+            //set black pawn
             let mut i: u32 = 0;
             while i <= 7 {
                 set!(
@@ -177,7 +221,7 @@ mod actions {
                 i += 1;
             };
  
-            // set white Knight
+            // set black Knight
             set!(
                 world,
                 (Piece {
@@ -197,7 +241,7 @@ mod actions {
                 })
             );
 
-            //set white Bishop
+            //set black Bishop
             set!(
                 world,
                 (Piece {
@@ -217,7 +261,7 @@ mod actions {
                 })
             );
 
-            //set white Queen
+            //set black Queen
             set!(
                 world,
                 (Piece {
@@ -228,7 +272,7 @@ mod actions {
                 })
             );
 
-            // set white King
+            // set black King
             set!(
                 world,
                 (Piece {
@@ -239,34 +283,32 @@ mod actions {
                 })
             );
 
-
             game_id
         }
 
-        fn move(
+        fn is_legal_move(
             world: IWorldDispatcher,
             curr_position: Vec2,
             next_position: Vec2,
             caller: ContractAddress, //player
             game_id: u32
-        ) {
+        ) -> bool {
             let mut current_piece = get!(world, (game_id, curr_position), (Piece));
             // check if next_position is out of board or not
-            assert(!PieceTrait::is_out_of_board(next_position), 'Should be inside board');
+            if (!PieceTrait::is_out_of_board(next_position)) { return false; }
 
             // check if this is the right move for this piece type
-            assert(current_piece.is_right_piece_move(next_position), 'Illegal move for type of piece');
+            if (!current_piece.is_right_piece_move(next_position)) { return false; }
 
             // Get piece data from to next_position in the board
             let mut next_position_piece = get!(world, (game_id, next_position), (Piece));
 
             let player = get!(world, (game_id, caller), (Player));
+
             // check if there is already a piece in next_position
-            assert(
-                next_position_piece.piece_type != PieceType::None
-                    || player.is_not_my_piece(next_position_piece.color),
-                'Already same color piece exist'
-            );
+            if (!player.is_not_my_piece(next_position_piece.color)) { return false; }
+
+            // check if path is blocked by another piece
 
             next_position_piece.piece_type = current_piece.piece_type;
             next_position_piece.color = player.color;
@@ -280,7 +322,7 @@ mod actions {
             let mut game_turn = get!(world, game_id, (GameTurn));
             game_turn.player_color = game_turn.next_turn();
             set!(world, (game_turn));
+            return true;
         }
     }
 }
-
