@@ -30,8 +30,7 @@ for (let p = 0; p < 2; p++) {
     initialBoardState.push({image: `/Assets/Images/${type}-queen.png`, x: 4, y});
 }
 
-export function Chessboard() {
-    const [board, setBoard] = useState<any[] | null>(null);
+export default function Chessboard() {
     const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
     const [gridX, setGridX] = useState(0);
     const [gridY, setGridY] = useState(0);
@@ -102,36 +101,31 @@ export function Chessboard() {
         }
     }
 
-    const drawBoard = () => {
-        let board = [];
-        for (let j = 7; j >= 0; j--) {
-            for (let i = 0; i < 7; i++) {
-                const number = j + i - 2;
-                let image = undefined;
-                pieces.forEach(p => {
-                    if (p.x === i && p.y === j) {
-                        image = p.image;
-                    }
-                })
-                if (image !== undefined) {
-                    board.push(<Tile
-                        image={image}
-                        number={number}/>);
-                } else {
-                    board.push(<Tile
-                        number={number}/>);
+    let board = [];
+
+    for (let j = 7; j >= 0; j--) {
+        for (let i = 0; i < 8; i++) {
+            const number = j + i + 2;
+            let image = undefined;
+
+            pieces.forEach((p) => {
+                if (p.x === i && p.y === j) {
+                    image = p.image;
                 }
-            }
+            });
+
+            board.push(<Tile key={`${j},${i}`} image={image} number={number} />);
         }
-        setBoard(board);
     }
 
-    return {
-        drawBoard,
-        grabPiece,
-        movePiece,
-        dropPiece,
-        chessBoardRef,
-        board,
-    }
+    return (
+        <div
+        onMouseUp={(e) => dropPiece(e)}
+        onMouseDown={(e) => grabPiece(e)}
+        onMouseMove={(e) => movePiece(e)}
+        id="chessboard"
+        ref={chessBoardRef}>
+            {board}
+        </div>
+    )
 }
