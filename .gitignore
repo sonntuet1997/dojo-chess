@@ -1,0 +1,5 @@
+/chess-client/node_modules
+/chess-logic/.idea
+/chess-logic/abis
+/chess-logic/manifests
+/chess-logic/target
