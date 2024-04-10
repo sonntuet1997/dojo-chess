@@ -78,7 +78,7 @@ mod tests {
         let next_pos = Vec2 { x: 0, y: 2 };
         let game_turn = get!(world, game_id, (GameTurn));
         assert(game_turn.player_color == Color::White, 'should be white player turn');
-        actions_system.move(curr_pos, next_pos, white.into(), game_id);
+        actions_system.is_legal_move(curr_pos, next_pos, game_id, white.into());
 
         let curr_pos = next_pos;
         let c3 = get!(world, (game_id, curr_pos), (Piece));

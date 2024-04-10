@@ -1,7 +1,7 @@
 use chess::models::player::Color;
 use starknet::ContractAddress;
 
-#[derive(Model, Drop, Serde)]
+#[derive(Model, Drop, Serde, Copy)]
 struct Piece {
     #[key]
     game_id: u32,
@@ -11,7 +11,7 @@ struct Piece {
     piece_type: PieceType,
 }
 
-#[derive(Copy, Drop, Serde, Introspect, Eq, PartialEq)]
+#[derive(Copy, Drop, Serde, Introspect, Eq, PartialEq, Debug)]
 struct Vec2 {
     x: u32,
     y: u32
@@ -28,11 +28,12 @@ enum PieceType {
     None,
 }
 
+#[derive(Serde, Drop, Copy, Debug, Display)]
 trait PieceTrait {
     fn is_out_of_board(next_position: Vec2) -> bool;
     fn is_right_piece_move(self: @Piece, next_position: Vec2) -> bool;
     fn get_distance(curr_position: Vec2, next_position: Vec2) -> u32;
-    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (i32, i32);
+    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (u32, u32, u32, u32);
     fn diff(a: u32, b: u32) -> u32;
 }
 
@@ -100,39 +101,60 @@ impl PieceImpl of PieceTrait {
         }
     }
 
-    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (i32, i32) {
-        let curr_x: i32 = curr_position.x.try_into().unwrap(); let next_x: i32 = next_position.x.try_into().unwrap();
-        let x: i32 = curr_x - next_x;
-        let curr_y: i32 = curr_position.y.try_into().unwrap(); let next_y: i32 = next_position.y.try_into().unwrap();
-        let y: i32 = curr_y - next_y;
-        let mut tup: (i32, i32) = (0, 0);
-        if (x > 0 && y > 0) {
-            tup = (1, 1);
+    //top, right, down, left
+    fn get_direction(curr_position: Vec2, next_position: Vec2) -> (u32, u32, u32, u32) {
+        let curr_x = curr_position.x;
+        let curr_y = curr_position.y;
+        let next_x = next_position.x;
+        let next_y = next_position.y;
+
+        let mut top: u32 = 0;
+        let mut right: u32 = 0;
+        let mut down: u32 = 0;
+        let mut left: u32 = 0;
+
+        if next_x > curr_x {
+            right = 1;
         }
-        if (x < 0 && y > 0) {
-            tup = (-1, 1);
+        if next_x < curr_x {
+            left = 1;
         }
-        if (x < 0 && y < 0) {
-            tup = (-1, -1);
+        if next_y > curr_y {
+            top = 1;
         }
-        if (x > 0 && y < 0) {
-            tup = (1, -1);
+        if next_y < curr_y {
+            down = 1;
         }
-        if y == 0 {
-            if x < 0 {
-                tup = (-1, 0);
-            } else {
-                tup = (1, 0);
-            }
-        }
-        if x == 0 {
-            if y < 0 {
-                tup = (0, -1);
-            } else {
-                tup = (0, 1);
-            }
-        }
-        return tup;
+
+        return (top, right, down, left);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::PieceTrait;
+    use chess::models::piece::Vec2;
+
+    #[test]
+    fn test_diff() {
+        assert!(PieceTrait::diff(2, 1) == 1, "Should be 1");
+        assert!(PieceTrait::diff(1, 2) == 1, "Should be 1");
+    }
+
+    #[test]
+    fn test_direction() {
+
+        let mut test_curr = Vec2 {x: 0, y: 0};
+        let mut test_next = Vec2 {x: 1, y: 1};
+        let (a, b, c, d): (u32, u32, u32, u32) = PieceTrait::get_direction(test_curr, test_next);
+        assert!((a, b, c, d) == (1, 1, 0, 0), "Wrong direction");
+    }
+
+    #[test]
+    fn test_distance() {
+        let mut test_curr = Vec2 {x: 0, y: 0};
+        let mut test_next = Vec2 {x: 1, y: 2};
+        assert!(PieceTrait::get_distance(test_curr, test_next) == 2, "Wrong distance");
     }
 }
 

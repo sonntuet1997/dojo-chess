@@ -19,6 +19,7 @@ mod actions {
 
     #[abi(embed_v0)]
     impl IActionsImpl of IActions<ContractState> {
+
         fn is_in_check(world: IWorldDispatcher, caller: ContractAddress, game_id: u32) -> bool {
             true
         }
@@ -32,52 +33,87 @@ mod actions {
                         next_position: Vec2,
                         game_id: u32,
                         caller: ContractAddress) -> bool {
+            let mut result: bool = true;
             //check if next position is not out of board
             if PieceTrait::is_out_of_board(next_position) {
-                return false;
+                result = false;
             }
+            assert!(!PieceTrait::is_out_of_board(next_position), "Should be inside board");
 
-            let mut curr_piece = get!(world, (game_id, curr_position), (Piece));
+
             //check if this piece move right
+            let mut curr_piece = get!(world, (game_id, curr_position), (Piece));
             if !curr_piece.is_right_piece_move(next_position) {
-                return false;
+                result = false;
             }
+            assert!(curr_piece.is_right_piece_move(next_position), "Illegal move for type of piece");
 
+
+            //check if next position have same color piece
             let mut next_position_piece = get!(world, (game_id, next_position), (Piece));
             let player = get!(world, (game_id, caller), (Player));
-            //check if next position have same color piece
             if !player.is_not_my_piece(next_position_piece.color) {
-                return false;
+                result = false;
             }
+            assert!(next_position_piece.piece_type == PieceType::None
+                    || !player.is_not_my_piece(next_position_piece.color),
+                    "Already same color piece exist"
+            );
 
             //check if this piece have a clear part from current position to next position
             if curr_piece.piece_type == PieceType::Pawn || curr_piece.piece_type == PieceType::Knight || curr_piece.piece_type == PieceType::King {
-                return true;
+                result = true;
             }
             if curr_piece.piece_type == PieceType::Queen || curr_piece.piece_type == PieceType::Bishop || curr_piece.piece_type == PieceType::Rook {
-                let (a, b): (i32, i32) = PieceTrait::get_direction(curr_position, next_position);
-                let mut d: i32 = PieceTrait::get_distance(curr_position, next_position).try_into().unwrap();
-                let mut i: i32 = 1;
-                let result: bool = loop
-                {
-                    if i > d
-                    {
-                        break true;
+                let mut d = PieceTrait::get_distance(curr_position, next_position);
+                let (top, right, down, left) = PieceTrait::get_direction(curr_position, next_position);
+                if top > 0 || right > 0 {
+                    let mut i = 1;
+                    result = loop {
+                        if i > d { break true; }
+                        let mut x: u32 = curr_position.x + i * right;
+                        let mut y: u32 = curr_position.y + i * top;
+                        let mut pos = Vec2 {x: x, y: y};
+                        let mut piece = get!(world, (game_id, pos), (Piece));
+                        if piece.piece_type != PieceType::None {
+                            break false;
+                        }
+                        i += 1;
                     }
-                    let mut x_i32: i32 = curr_position.x.try_into().unwrap(); let mut y_i32: i32 = curr_position.y.try_into().unwrap();
-                    x_i32 += i * a; y_i32 += i * b;
-                    let mut x_u32: u32 = x_i32.try_into().unwrap(); let mut y_u32: u32 = y_i32.try_into().unwrap();
-                    let mut pos = Vec2 {x: x_u32, y: y_u32};
-                    let mut piece = get!(world, (game_id, pos), (Piece));
-                    if piece.piece_type != PieceType::None
-                    {
-                        break false;
+                }
+                if left > 0 || down > 0 {
+                    let mut i = 1;
+                    result = loop {
+                        if i > d { break true; }
+                        let mut x: u32 = curr_position.x - i * left;
+                        let mut y: u32 = curr_position.y - i * down;
+                        let mut pos = Vec2 {x: x, y: y};
+                        let mut piece = get!(world, (game_id, pos), (Piece));
+                        if piece.piece_type != PieceType::None {
+                            break false;
+                        }
+                        i += 1;
                     }
-                    i += 1;
-                };
-                return result;
+                }
             }
-            return false;
+
+            if result == true {
+                // turn next position piece into current piece
+                next_position_piece.piece_type = curr_piece.piece_type;
+                next_position_piece.color = player.color;
+
+                // make current_piece piece none
+                curr_piece.piece_type = PieceType::None;
+                curr_piece.color = Color::None;
+                set!(world, (next_position_piece));
+                set!(world, (curr_piece));
+
+                // change turn
+                let mut game_turn = get!(world, game_id, (GameTurn));
+                game_turn.player_color = game_turn.next_turn();
+                set!(world, (game_turn));
+            }
+            return result;
         }
 
         fn spawn(
@@ -205,6 +241,7 @@ mod actions {
                 })
             );
 
+            // set black pieces
             // set black Rook
             set!(
                 world,
@@ -302,6 +339,7 @@ mod actions {
                 })
             );
 
+            //return game id
             game_id
         }
 
