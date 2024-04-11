@@ -112,6 +112,8 @@ mod actions {
                 let mut game_turn = get!(world, game_id, (GameTurn));
                 game_turn.player_color = game_turn.next_turn();
                 set!(world, (game_turn));
+            } else {
+                assert!(result == true, "Failed to moved");
             }
             return result;
         }
