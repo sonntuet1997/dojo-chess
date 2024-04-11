@@ -1,11 +1,17 @@
 import './Chessboard.css'
 import Tile from "../Tile/Tile";
-import React, {useEffect, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
+import {setupNetwork, white, black} from "../../dojo/setupNetwork";
 
 interface Piece {
     image: string
     x: number
     y: number
+}
+
+export interface Vec2 {
+    x: number,
+    y: number,
 }
 
 const initialBoardState: Piece[] = [];
@@ -30,7 +36,9 @@ for (let p = 0; p < 2; p++) {
     initialBoardState.push({image: `/Assets/Images/${type}-queen.png`, x: 4, y});
 }
 
-export default function Chessboard() {
+export default function Chessboard(props: { gameId: any; }) {
+    const { gameId } = props;
+    const [player, setPlayer] = useState(white);
     const [activePiece, setActivePiece] = useState<HTMLElement | null>(null);
     const [gridX, setGridX] = useState(0);
     const [gridY, setGridY] = useState(0);
@@ -82,24 +90,51 @@ export default function Chessboard() {
         }
     }
 
-    const dropPiece = (e: React.MouseEvent) => {
+    const dropPiece = async (e: React.MouseEvent) => {
         const chessboard = chessBoardRef.current;
-        console.log(chessboard);
         if (activePiece && chessboard) {
             const x = Math.floor((e.clientX - chessboard.offsetLeft) / 100);
             const y = 7 - Math.floor((e.clientY - chessboard.offsetTop) / 100);
-            setPieces((value) => {
-                return value.map((p) => {
-                    if (p.x === gridX && p.y === gridY) {
-                        p.x = x;
-                        p.y = y;
-                    }
-                    return p;
+            const current_position: Vec2 = { x: gridX, y: gridY };
+            const next_position: Vec2 = { x: x, y: y };
+            console.log(current_position, next_position);
+
+            // Call the network function and handle the response
+            const moveSuccessful = await setupNetwork().callMove(current_position, next_position, gameId, player, setupNetwork().signer);
+            console.log("move:" + moveSuccessful);
+            if (moveSuccessful !== false) {
+                const pieceToRemove = pieces.find((p) => p.x === x && p.y === y);
+                if (pieceToRemove) {
+                    setPieces((prevPieces) => prevPieces.filter((p) => p !== pieceToRemove));
+                }
+                setPieces((value) => {
+                    return value.map((p) => {
+                        if (p.x === gridX && p.y === gridY) {
+                            p.x = x;
+                            p.y = y;
+                        }
+                        return p;
+                    });
                 });
-            });
-            setActivePiece(null);
+                if (player === white) {
+                    setPlayer(black);
+                } else {
+                    setPlayer(white);
+                }
+            } else {
+                // Move failed, return piece to original position
+                setActivePiece((prevActivePiece) => {
+                    if (prevActivePiece) {
+                        prevActivePiece.style.position = 'absolute';
+                        prevActivePiece.style.left = `${gridX * 100 + chessboard.offsetLeft}px`;
+                        prevActivePiece.style.top = `${(7 - gridY) * 100 + chessboard.offsetTop}px`;
+                    }
+                    return null;
+                });
+            }
         }
     }
+
 
     let board = [];
 

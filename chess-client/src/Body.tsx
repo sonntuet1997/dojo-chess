@@ -12,30 +12,32 @@ export enum State {
 
 export function Body() {
     const [state, setState] = useState<State>(State.Init);
+    const [gameId, setGameId] = useState(0);
 
     useEffect(() => {
-        if (state === State.Spawn) setupNetwork().callSpawn().then(r => setState(State.Playing))
+        if (state === State.Spawn) setupNetwork().callSpawn(setupNetwork().signer, setupNetwork().signer).then(() => {
+            setState(State.Playing);
+        })
     }, [state]);
 
-    const handleClick = () => {
-        setState(State.Spawn);
-    };
-
-    console.log(state);
+    const handleReset = () => {
+        setState(State.Init);
+        setGameId((prevState) => prevState + 1);
+    }
 
     return (
         <div>
             {state === State.Init && (
-                <Button onClick={handleClick}>Start Game</Button>
+                <Button onClick={() => setState(State.Spawn)}>Start Game</Button>
             )}
             {state === State.Spawn &&
-                <div>
+                <div className="text-color">
                     Loading board...
                 </div>}
-            {state === State.Playing && <Chessboard />}
+            {state === State.Playing && <Chessboard gameId={gameId}/>}
             {state === State.End && <p>
                 Checkmate! Game Over.
-                <Button onClick={() => setState(State.Init)}>Play one more time!</Button>
+                <Button onClick={() => handleReset()}>Play one more time!</Button>
             </p>}
         </div>
     );
