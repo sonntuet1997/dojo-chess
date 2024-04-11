@@ -10,3 +10,10 @@
   color: aliceblue;
   font-size: 40px;
 }
+
+.top-left-button {
+  position: absolute; /* Remove the button from normal document flow */
+  top: 0; /* Place it at the top edge */
+  left: 0; /* Place it at the left edge */
+  /* Add other button styles here, like background color, padding, etc. */
+}

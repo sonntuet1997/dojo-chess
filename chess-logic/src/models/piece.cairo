@@ -143,11 +143,15 @@ mod test {
 
     #[test]
     fn test_direction() {
-
         let mut test_curr = Vec2 {x: 0, y: 0};
         let mut test_next = Vec2 {x: 1, y: 1};
         let (a, b, c, d): (u32, u32, u32, u32) = PieceTrait::get_direction(test_curr, test_next);
         assert!((a, b, c, d) == (1, 1, 0, 0), "Wrong direction");
+
+        let mut test_curr = Vec2 {x: 2, y: 2};
+        let mut test_next = Vec2 {x: 1, y: 1};
+        let (a, b, c, d): (u32, u32, u32, u32) = PieceTrait::get_direction(test_curr, test_next);
+        assert!((a, b, c, d) == (0, 0, 1, 1), "Wrong direction");
     }
 
     #[test]

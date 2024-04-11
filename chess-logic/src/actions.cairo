@@ -55,8 +55,7 @@ mod actions {
             if !player.is_not_my_piece(next_position_piece.color) {
                 result = false;
             }
-            assert!(next_position_piece.piece_type == PieceType::None
-                    || !player.is_not_my_piece(next_position_piece.color),
+            assert!(!player.is_not_my_piece(next_position_piece.color),
                     "Already same color piece exist"
             );
 
@@ -67,33 +66,26 @@ mod actions {
             if curr_piece.piece_type == PieceType::Queen || curr_piece.piece_type == PieceType::Bishop || curr_piece.piece_type == PieceType::Rook {
                 let mut d = PieceTrait::get_distance(curr_position, next_position);
                 let (top, right, down, left) = PieceTrait::get_direction(curr_position, next_position);
-                if top > 0 || right > 0 {
-                    let mut i = 1;
-                    result = loop {
-                        if i > d { break true; }
-                        let mut x: u32 = curr_position.x + i * right;
-                        let mut y: u32 = curr_position.y + i * top;
-                        let mut pos = Vec2 {x: x, y: y};
-                        let mut piece = get!(world, (game_id, pos), (Piece));
-                        if piece.piece_type != PieceType::None {
-                            break false;
-                        }
-                        i += 1;
+                let mut i = 1;
+                result = loop {
+                    if i > d { break true; }
+
+                    let mut x: u32 = 0;
+                    if left != 0 { x = curr_position.x - i * left; }
+                    if right != 0 { x = curr_position.x + i * right; }
+                    if left == 0 && right == 0 { x = curr_position.x ;}
+
+                    let mut y: u32 = 0;
+                    if down != 0 { y = curr_position.y - i * down; }
+                    if top != 0 { y = curr_position.y + i * top; }
+                    if down == 0 && top == 0 { y = curr_position.y; }
+
+                    let mut pos = Vec2 {x: x, y: y};
+                    let mut piece = get!(world, (game_id, pos), (Piece));
+                    if piece.piece_type != PieceType::None {
+                        break false;
                     }
-                }
-                if left > 0 || down > 0 {
-                    let mut i = 1;
-                    result = loop {
-                        if i > d { break true; }
-                        let mut x: u32 = curr_position.x - i * left;
-                        let mut y: u32 = curr_position.y - i * down;
-                        let mut pos = Vec2 {x: x, y: y};
-                        let mut piece = get!(world, (game_id, pos), (Piece));
-                        if piece.piece_type != PieceType::None {
-                            break false;
-                        }
-                        i += 1;
-                    }
+                    i += 1;
                 }
             }
 

@@ -32,8 +32,8 @@ for (let p = 0; p < 2; p++) {
     initialBoardState.push({image: `/Assets/Images/${type}-knight.png`, x: 6, y});
     initialBoardState.push({image: `/Assets/Images/${type}-bishop.png`, x: 2, y});
     initialBoardState.push({image: `/Assets/Images/${type}-bishop.png`, x: 5, y});
-    initialBoardState.push({image: `/Assets/Images/${type}-king.png`, x: 3, y});
-    initialBoardState.push({image: `/Assets/Images/${type}-queen.png`, x: 4, y});
+    initialBoardState.push({image: `/Assets/Images/${type}-king.png`, x: 4, y});
+    initialBoardState.push({image: `/Assets/Images/${type}-queen.png`, x: 3, y});
 }
 
 export default function Chessboard(props: { gameId: any; }) {

@@ -12,7 +12,7 @@ export enum State {
 
 export function Body() {
     const [state, setState] = useState<State>(State.Init);
-    const [gameId, setGameId] = useState(0);
+    const [gameId, setGameId] = useState(1);
 
     useEffect(() => {
         if (state === State.Spawn) setupNetwork().callSpawn(setupNetwork().signer, setupNetwork().signer).then(() => {
@@ -34,7 +34,12 @@ export function Body() {
                 <div className="text-color">
                     Loading board...
                 </div>}
-            {state === State.Playing && <Chessboard gameId={gameId}/>}
+            {state === State.Playing && <div>
+                <Button onClick={() => handleReset()}>
+                    <div className="top-left-button"> Reset </div>
+                </Button>
+                <Chessboard gameId={gameId}/>
+            </div>}
             {state === State.End && <p>
                 Checkmate! Game Over.
                 <Button onClick={() => handleReset()}>Play one more time!</Button>
