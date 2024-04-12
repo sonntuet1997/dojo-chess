@@ -186,14 +186,7 @@ export const abi = [
                 "type": "function",
                 "name": "spawn",
                 "inputs": [
-                    {
-                        "name": "white_address",
-                        "type": "core::starknet::contract_address::ContractAddress"
-                    },
-                    {
-                        "name": "black_address",
-                        "type": "core::starknet::contract_address::ContractAddress"
-                    }
+
                 ],
                 "outputs": [
                     {

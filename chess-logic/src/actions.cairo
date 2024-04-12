@@ -6,7 +6,7 @@ trait IActions {
     fn is_in_check(caller: ContractAddress, game_id: u32) -> bool;
     fn is_in_checkmate(caller: ContractAddress, game_id: u32) -> bool;
     fn is_legal_move(curr_position: Vec2, next_position: Vec2, game_id: u32, caller: ContractAddress) -> bool;
-    fn spawn(white_address: ContractAddress, black_address: ContractAddress) -> u32;
+    fn spawn() -> u32;
 }
 
 #[dojo::contract]
@@ -110,27 +110,8 @@ mod actions {
         }
 
         fn spawn(
-            world: IWorldDispatcher,
-            white_address: ContractAddress,
-            black_address: ContractAddress
-        ) -> u32 {
-            let game_id: u32 = world.uuid();
-
-            // set Players
-            set!(
-                world,
-                (
-                    Player { game_id, address: black_address, color: Color::Black },
-                    Player { game_id, address: white_address, color: Color::White },
-                    Game {
-                        game_id, winner: Color::None, white: white_address, black: black_address
-                    },
-                    GameTurn { game_id, player_color: Color::White },
-                )
-            );
-
-            //return game id
-            game_id
+            world: IWorldDispatcher) -> u32 {
+            0
         }
     }
 }

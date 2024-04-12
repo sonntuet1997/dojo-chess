@@ -41,10 +41,7 @@ export async function SpawnGame({provider, signer}:{ provider: RpcProvider; sign
 
     //call contract method to generate new game
     await system_contract.invoke('spawn',
-        contractCallData.compile('spawn', {
-            white_address: white_contract_address,
-            black_address: black_contract_address,
-        }),
+        contractCallData.compile('spawn', {}),
         {
             maxFee: 0,
         });

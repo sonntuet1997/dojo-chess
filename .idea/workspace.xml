@@ -4,10 +4,9 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="925f6cf9-c74a-4c23-9ce3-965fdde0db71" name="Changes" comment="add: chess-client">
+    <list default="true" id="925f6cf9-c74a-4c23-9ce3-965fdde0db71" name="Changes" comment="temp">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess-client/src/Body.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/chess-client/src/Body.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chess-client/src/Components/Chessboard/Chessboard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/chess-client/src/Components/Chessboard/Chessboard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/chess-client/src/dojo/abi.ts" beforeDir="false" afterPath="$PROJECT_DIR$/chess-client/src/dojo/abi.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chess-client/src/dojo/setupNetwork.ts" beforeDir="false" afterPath="$PROJECT_DIR$/chess-client/src/dojo/setupNetwork.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/chess-logic/src/actions.cairo" beforeDir="false" afterPath="$PROJECT_DIR$/chess-logic/src/actions.cairo" afterDir="false" />
     </list>
@@ -90,7 +89,7 @@
       <workItem from="1712721640612" duration="304000" />
       <workItem from="1712834647698" duration="963000" />
       <workItem from="1712835875869" duration="168000" />
-      <workItem from="1712836246495" duration="2164000" />
+      <workItem from="1712836246495" duration="3178000" />
     </task>
     <task id="LOCAL-00001" summary="add: game UI">
       <option name="closed" value="true" />
@@ -140,7 +139,15 @@
       <option name="project" value="LOCAL" />
       <updated>1712721743165</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="temp">
+      <option name="closed" value="true" />
+      <created>1712838487736</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1712838487736</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -169,7 +176,8 @@
     <MESSAGE value="update: piece logic in piece.cairo" />
     <MESSAGE value="update: piece login in piece.cairo, actions.cairo" />
     <MESSAGE value="add: chess-client" />
-    <option name="LAST_COMMIT_MESSAGE" value="add: chess-client" />
+    <MESSAGE value="temp" />
+    <option name="LAST_COMMIT_MESSAGE" value="temp" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
